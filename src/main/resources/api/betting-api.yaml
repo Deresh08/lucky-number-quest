@@ -1,0 +1,236 @@
+openapi: 3.0.0
+info:
+  title: Gaming API
+  version: 1.0.0
+tags:
+  - name: Player
+    description: Operations about players
+  - name: Wallet
+    description: Operation about wallet
+  - name: Game
+    description: Various games that can be played
+paths:
+  /players:
+    post:
+      tags:
+        - Player
+      summary: Create a player
+      operationId: createPlayer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlayerRequest'
+      responses:
+        '200':
+          description: Player created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePlayerResponse'
+        '409':
+          description: Player creation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePlayerResponse'
+  /wallets/{player_id}:
+    get:
+      tags:
+        - Wallet
+      summary: Get wallets by player ID
+      operationId: getWalletsByPlayerId
+      parameters:
+        - name: player_id
+          in: path
+          description: ID of the player
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Wallet'
+  /wallets/{wallet_id}/transactions:
+    get:
+      tags:
+        - Wallet
+      summary: Get transactions by wallet ID
+      operationId: getTransactionsByWalletId
+      parameters:
+        - name: wallet_id
+          in: path
+          description: ID of the wallet
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+  /games/lucky-number-quest:
+    post:
+      tags:
+      - Game
+      summary: Play Lucky Number Quest
+      operationId: playLuckyNumberQuest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LuckNumberRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LuckNumberResponse'
+        '409':
+          description: Failed to play Lucky Number Quest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LuckNumberResponse'
+  /games/lucky-number-quest/{walletId}/results:
+    get:
+      summary: Get game results by wallet ID
+      operationId: getGameResultsByWalletId
+      parameters:
+        - name: walletId
+          in: path
+          description: ID of the wallet
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameResult'
+  /games/lucky-number-quest/odds:
+    get:
+      summary: Get list of odds for Lucky Number Quest
+      responses:
+        '200':
+          description: Successful response with list of odds
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Odd'
+components:
+  schemas:
+    CreatePlayerRequest:
+      type: object
+      required:
+        - name
+        - surname
+        - username
+      properties:
+        name:
+          type: string
+        surname:
+          type: string
+        username:
+          type: string
+    CreatePlayerResponse:
+      type: object
+      oneOf:
+        - properties:
+            playerId:
+              type: number
+        - properties:
+            errorMessage:
+              type: string
+    Wallet:
+      type: object
+      properties:
+        id:
+          type: number
+        balance:
+          type: number
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: number
+        amount:
+          type: number
+        transactionType:
+          type: string
+        createdOn:
+          type: string
+          format: date-time
+    LuckNumberRequest:
+      type: object
+      required:
+        - walletId
+        - amount
+        - prediction
+      properties:
+        walletId:
+          type: number
+        amount:
+          type: number
+        prediction:
+          type: integer
+          minimum: 1
+          maximum: 10
+    LuckNumberResponse:
+      type: object
+      oneOf:
+        - properties:
+            outcome:
+              type: integer
+            prediction:
+              type: integer
+        - properties:
+            errorMessage:
+              type: string
+    GameResult:
+      type: object
+      properties:
+        id:
+          type: number
+        prediction:
+          type: integer
+        result:
+          type: integer
+        amount:
+          type: number
+        winAmount:
+          type: number
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    Odd:
+      type: object
+      properties:
+        spread:
+          type: integer
+          description: The spread of the odd
+        odds:
+          type: number
+          description: The value of the odd
+        description:
+          type: string
